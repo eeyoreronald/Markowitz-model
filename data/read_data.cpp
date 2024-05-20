@@ -138,12 +138,15 @@ public:
             p0 = vectorAddition(s1, scalarVectorProduct(beta, p0));
             s0 = s1;
             i++;
+            /*
             cout << "This is iteration number: " << i << "\n";
             cout << "The current x0 is: ";
             for (const auto& x : x0) {
                 cout << x << " ";
             }
             cout << "\n";
+            */
+            
         }
         return x0;
     }
@@ -164,13 +167,13 @@ public:
 
         // Copy mean_returns and -1 into Q
         for (int i = 0; i < len; i++) {
-            Q[len][i] = mean_returns[i];
+            Q[len][i] = -mean_returns[i];
             Q[len + 1][i] = -1;
         }
 
         // Copy array_ and array_2 into Q
         for (int i = 0; i < len; i++) {
-            Q[i][len] = mean_returns[i];
+            Q[i][len] = -mean_returns[i];
             Q[i][len + 1] = -1;
         }
 
@@ -241,6 +244,7 @@ public:
 
         return weights_list;
     }
+
     vector<vector<double> > createSmallReturnMatrix(const vector<vector<double>>& returnMatrix, int numberAssets_small, int numberReturns_small) {
         vector<vector<double> > returnMatrix_small(numberAssets_small, vector<double>(numberReturns_small, 0.0));
 
@@ -251,6 +255,38 @@ public:
         }
 
         return returnMatrix_small;
+    }
+
+    vector<vector<double>> selectRows(const vector<vector<double>>& returnMatrix, int start, int end) {
+        vector<vector<double>> subset;
+        for (int i = start; i < end; ++i) {
+            subset.push_back(returnMatrix[i]);
+        }
+        return subset;
+    }
+
+    vector<vector<double>> backtesting (vector<vector<double>> optimal_weights, vector<vector<double>> OOS_returns, vector<double> target_return){
+        ParameterEstimation return_OOS(OOS_returns);
+        vector <vector<double>> covariance_martix_OOS = return_OOS.calculateCovarianceMatrix();
+        vector <double> mean_returns_OOS = return_OOS.calculateMeanReturns();
+
+        MatrixCalculator calc;
+        vector<vector<double>> res;
+
+        for (int index = 0; index < optimal_weights.size(); ++index) {
+            vector<double> weights = optimal_weights[index];
+            double targ_ret = target_return[index];
+
+            double act_ave_return = calc.dotProduct(mean_returns_OOS, weights);
+
+            vector<double> temp = calc.matrixVectorProduct(covariance_martix_OOS, weights);
+            double pf_cov = calc.dotProduct(weights, temp);
+
+            res.push_back({targ_ret, act_ave_return, pf_cov});
+        }
+
+        return res;
+
     }
 
 };
@@ -267,7 +303,6 @@ int main (int argc, char *argv[])
 
     vector<vector<double> > returnMatrix(numberAssets, vector<double>(numberReturns, 0.0));
     
-    
     string fileName="asset_returns.csv";
     readData(returnMatrix,fileName);
     
@@ -279,9 +314,8 @@ int main (int argc, char *argv[])
     //Create a matrix to store the first 5 assets and the first 10 returns
     int numberAssets_small=5;
     int numberReturns_small=10;
-
-    Quadratic quadratic;
-    vector<vector<double>> returnMatrix_small = quadratic.createSmallReturnMatrix(returnMatrix, numberAssets_small, numberReturns_small);
+    Quadratic portfolio;
+    vector<vector<double>> returnMatrix_small = portfolio.createSmallReturnMatrix(returnMatrix, numberAssets_small, numberReturns_small);
     
 
     //--------------------------------------------------------------------------------
@@ -303,33 +337,101 @@ int main (int argc, char *argv[])
     vector<vector<double> > covarianceMatrix_large = return_large.calculateCovarianceMatrix();
 
 
-
    //Vector to store the target returns
     TargetReturns target_1(0.0, 0.1, 20);
     vector<double> target_returns = target_1.getReturns();
 
     //Calculate the matrix Q, b_matrix and x0 for ConjugateGradientMethod
-    vector<vector<double> > Q = quadratic.createMatrixQ(covarianceMatrix_small, meanReturns_small);
-    vector<vector<double> > b_matrix = quadratic.calculateBMatrix(target_returns, meanReturns_small);
-    vector <double> x0 = quadratic.calculateX0(Q, numberAssets_small, 0.5);
+    vector<vector<double> > Q = portfolio.createMatrixQ(covarianceMatrix_small, meanReturns_small);
+    vector<vector<double> > b_matrix = portfolio.calculateBMatrix(target_returns, meanReturns_small);
+    vector <double> x0 = portfolio.calculateX0(Q, numberAssets_small, 0.5);
     
     //For large dataset
-    //Q = quadratic.createMatrixQ(covarianceMatrix_large, meanReturns_large);
-    //b_matrix = quadratic.calculateBMatrix(target_returns, meanReturns_large);
-    //x0 = quadratic.calculateX0(Q, numberAssets, 0.5);
+    //Q = portfolio.createMatrixQ(covarianceMatrix_large, meanReturns_large);
+    //b_matrix = portfolio.calculateBMatrix(target_returns, meanReturns_large);
+    //x0 = portfolio.calculateX0(Q, numberAssets, 0.5);
 
 
     //ConjugateGradientMethod solver, for portfolio optimization
     double tolerance  = 1e-10;
-    vector<vector<double> > weights_matrix_small = quadratic.calculatePortfolioWeights(Q, b_matrix, x0, tolerance, meanReturns_small);
-    //vector<vector<double> > weights_matrix_large = quadratic.calculatePortfolioWeights(Q, b_matrix, x0, tolerance, meanReturns_large);
+    vector<vector<double> > weights_matrix_small = portfolio.calculatePortfolioWeights(Q, b_matrix, x0, tolerance, meanReturns_small);
+    //vector<vector<double> > weights_matrix_large = portfolio.calculatePortfolioWeights(Q, b_matrix, x0, tolerance, meanReturns_large);
 
     
     //Backtesting in the following code
+    //vector<vector<double>> backtesting (vector<vector<double>> optimal_weights, vector<vector<double>> OOS_returns, vector<double> target_return)
+
+    vector<vector<double>> OOS_return = portfolio.backtesting(weights_matrix_small, returnMatrix_small, target_returns);
+    
+    //print out OOS_return
+    cout << "\n_______\nPrinting out OOS_return\n";
+    for(int i = 0; i < OOS_return.size(); i++) {
+        for(int j = 0; j < OOS_return[i].size(); j++) {
+            cout << OOS_return[i][j] << " ";
+        }
+        cout << "\n";
+    }
+
+    //note to myself
+    //OOS_return[i][0] = target return
+    //OOS_return[i][1] = actual average return
+    //OOS_return[i][2] = portfolio covariance
+
+    //-------------------------------------------------------------------------------- Backtesting implmentations
+    
+    /*
+    //vector<vector<double> > returnMatrix(numberAssets, vector<double>(numberReturns, 0.0));
+    //string fileName="asset_returns.csv";
+    //readData(returnMatrix,fileName);
+    //int numberReturns = 700;
+    int N = (numberReturns - 100) / 12;
+
+    
+    TargetReturns target_1(0.0, 0.1, 20);
+    vector<double> target_returns = target_1.getReturns();
+    double tolerance  = 1e-10;
+    
+    if (numberReturns > returnMatrix.size()) {
+        throw length_error("numberReturns is greater than the number of rows in returnMatrix");
+    }
+    else
+        cout<<"numberReturns is less than the number of rows in returnMatrix"<<endl;
 
 
 
+    for (int i = 0; i < numberReturns - 100; i += 12) {
+        int index = i / 12;
+        int start = i;
+        int mid = i + 100;
+        int end = i + 112;
+        vector<vector<double>> returnMatrix_IS = portfolio.selectRows(returnMatrix, start, mid);
+        vector<vector<double>> returnMatrix_OOS = portfolio.selectRows(returnMatrix, mid, end);
+        ParameterEstimation return_IS(returnMatrix_IS);
+
+
+        
+        vector<double> meanReturns_IS = return_IS.calculateMeanReturns();
+        vector<vector<double> > covarianceMatrix_IS = return_IS.calculateCovarianceMatrix();
+        
+        Q = portfolio.createMatrixQ(covarianceMatrix_IS, meanReturns_IS);
+        b_matrix = portfolio.calculateBMatrix(target_returns, meanReturns_IS);
+        x0 = portfolio.calculateX0(Q, numberAssets, 0.5);
+
+        vector<vector<double> > weights_matrix_IS = portfolio.calculatePortfolioWeights(Q, b_matrix, x0, tolerance, meanReturns_IS);
+        vector<vector<double>> OOS_return = portfolio.backtesting(weights_matrix_IS, returnMatrix_OOS, target_returns);
+        cout << "index: " << index << "\n";
+        
+
+
+    }
+    
+    */
+    
+    
+    
     return 0;
+    
+
 }
 
 
@@ -359,21 +461,15 @@ void readData(vector<vector<double> >& data, const string& fileName)
     {
         int i = 0;
         while (csv.getline(line) != 0) {
-            cout << "Enter while loop, i=" << i << "\n";
             for (int j = 0; j < csv.getnfield(); j++)
             {
                 double temp = string_to_double(csv.getfield(j));
-                cout << "Asset " << j << ", Return " << i << "=" << temp << "\n";
-                cout << "j: " << j << ", i: " << i << "\n";
+                //cout << "Asset " << j << ", Return " << i << "=" << temp << "\n";
                 data[j][i] = temp;
             }
             i++;
-            cout << "end while loop, i=" << i << "\n";
         }
-        cout << "Read successfully" << endl;
         file.close();
-        cout << "File closed" << endl;
-
 
     }
     else {
