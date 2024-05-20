@@ -322,6 +322,7 @@ int main (int argc, char *argv[])
     //ConjugateGradientMethod solver, for portfolio optimization
     double tolerance  = 1e-10;
     vector<vector<double> > weights_matrix_small = quadratic.calculatePortfolioWeights(Q, b_matrix, x0, tolerance, meanReturns_small);
+    //vector<vector<double> > weights_matrix_large = quadratic.calculatePortfolioWeights(Q, b_matrix, x0, tolerance, meanReturns_large);
 
     
     //Backtesting in the following code
