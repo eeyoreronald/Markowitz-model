@@ -1,6 +1,7 @@
 //g++ -std=c++17 -c main.cpp
+//g++ -std=c++17 -c ParameterEstimation.cpp
 //g++ -std=c++17 -c csv.cpp
-//g++ -std=c++17 -o portfolioSolver csv.o main.o
+//g++ -std=c++17 -o portfolioSolver csv.o main.o ParameterEstimation.o
 //./portfolioSolver
 
 #include <stdio.h>
@@ -13,6 +14,7 @@
 #include <cmath>
 
 #include "csv.h"
+#include "ParameterEstimation.h"
 
 using namespace std;
 
@@ -23,6 +25,7 @@ void readData(vector<vector<double> >& data, const string& fileName);
 
 //---------------------- Class implmentation -----------------------------------
 
+/*
 class ParameterEstimation {
 private:
     vector<vector<double> > returnMatrix;
@@ -61,6 +64,8 @@ public:
 
 
 };
+*/
+
 
 class TargetReturns {
 private:
