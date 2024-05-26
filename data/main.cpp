@@ -1,7 +1,15 @@
 //g++ -std=c++17 -c main.cpp
 //g++ -std=c++17 -c ParameterEstimation.cpp
+//g++ -std=c++17 -c TargetReturns.cpp
+//g++ -std=c++17 -c MatrixCalculator.cpp
+//g++ -std=c++17 -c ConjugateGradientMethod.cpp
 //g++ -std=c++17 -c csv.cpp
-//g++ -std=c++17 -o portfolioSolver csv.o main.o ParameterEstimation.o
+//g++ -std=c++17 -c string_to_double.cpp
+//g++ -std=c++17 -c readData.cpp
+
+
+//g++ -std=c++17 -c main.cpp readData.cpp string_to_double.cpp ParameterEstimation.cpp TargetReturns.cpp MatrixCalculator.cpp ConjugateGradientMethod.cpp csv.cpp
+//g++ -std=c++17 -o portfolioSolver main.o readData.o csv.o string_to_double.o ParameterEstimation.o TargetReturns.o MatrixCalculator.o ConjugateGradientMethod.o
 //./portfolioSolver
 
 #include <stdio.h>
@@ -15,147 +23,16 @@
 
 #include "csv.h"
 #include "ParameterEstimation.h"
+#include "TargetReturns.h"
+#include "MatrixCalculator.h"
+#include "ConjugateGradientMethod.h"
+#include "string_to_double.h"
+#include "readData.h"
 
 using namespace std;
 
 
-double string_to_double( const string& s );
-void readData(vector<vector<double> >& data, const string& fileName);
-
-
 //---------------------- Class implmentation -----------------------------------
-
-/*
-class ParameterEstimation {
-private:
-    vector<vector<double> > returnMatrix;
-
-public:
-    ParameterEstimation(const vector<vector<double> >& returnMatrix) : returnMatrix(returnMatrix) {}
-
-    vector<double> calculateMeanReturns() {
-        vector<double> meanReturns;
-        for (const auto& assetReturns : returnMatrix) {
-            double sum = accumulate(assetReturns.begin(), assetReturns.end(), 0.0);
-            meanReturns.push_back(sum / assetReturns.size());
-        }
-        return meanReturns;
-    }
-
-    vector<vector<double> > calculateCovarianceMatrix() {
-        vector<double> meanReturns = calculateMeanReturns();
-        int numAssets = returnMatrix.size();
-        int numReturns = returnMatrix[0].size();
-
-        vector<vector<double> > covarianceMatrix(numAssets, vector<double>(numAssets, 0.0));
-
-        for (int i = 0; i < numAssets; ++i) {
-            for (int j = 0; j < numAssets; ++j) {
-                double cov = 0.0;
-                for (int k = 0; k < numReturns; ++k) {
-                    cov += (returnMatrix[i][k] - meanReturns[i]) * (returnMatrix[j][k] - meanReturns[j]);
-                }
-                covarianceMatrix[i][j] = cov / (numReturns - 1);
-            }
-        }
-
-        return covarianceMatrix;
-    }
-
-
-};
-*/
-
-
-class TargetReturns {
-private:
-    vector<double> target_returns;
-
-public:
-    TargetReturns(double start, double end, int num) {
-        double step = (end - start) / (num - 1);
-        for (int i = 0; i < num; ++i) {
-            target_returns.push_back(start + i * step);
-        }
-    }
-
-    vector<double> getReturns() const {
-        return target_returns;
-    }
-};
-
-class MatrixCalculator {
-public:
-    double dotProduct(const vector<double>& a, const vector<double>& b) {
-        double sum = 0;
-        for (size_t i = 0; i < a.size(); i++) {
-            sum += a[i] * b[i];
-        }
-        return sum;
-    }
-
-    vector<double> matrixVectorProduct(const vector<vector<double> >& a, const vector<double>& x) {
-        vector<double> result(a.size(), 0);
-        for (size_t i = 0; i < a.size(); i++) {
-            for (size_t j = 0; j < a[0].size(); j++) {
-                result[i] += a[i][j] * x[j];
-            }
-        }
-        return result;
-    }
-
-    vector<double> vectorSubtraction(const vector<double>& a, const vector<double>& b) {
-        vector<double> result(a.size());
-        for (size_t i = 0; i < a.size(); i++) {
-            result[i] = a[i] - b[i];
-        }
-        return result;
-    }
-
-    vector<double> vectorAddition(const vector<double>& a, const vector<double>& b) {
-        vector<double> result(a.size());
-        for (size_t i = 0; i < a.size(); i++) {
-            result[i] = a[i] + b[i];
-        }
-        return result;
-    }
-
-    vector<double> scalarVectorProduct(double scalar, const vector<double>& v) {
-        vector<double> result(v.size());
-        for (size_t i = 0; i < v.size(); i++) {
-            result[i] = scalar * v[i];
-        }
-        return result;
-    }
-};
-
-class ConjugateGradientMethod : public MatrixCalculator {
-public:
-    vector<double> conjugate_gradient(const vector<vector<double> >& Q, const vector<double>& b, vector<double> x0, double tol=1e-6) {
-        vector<double> s0 = vectorSubtraction(b, matrixVectorProduct(Q, x0));
-        vector<double> p0 = s0;
-        int i = 0;
-        while (dotProduct(s0, s0) > tol) {
-            double alpha = dotProduct(s0, s0) / dotProduct(matrixVectorProduct(Q, p0), p0);
-            x0 = vectorAddition(x0, scalarVectorProduct(alpha, p0));
-            vector<double> s1 = vectorSubtraction(s0, scalarVectorProduct(alpha, matrixVectorProduct(Q, p0)));
-            double beta = dotProduct(s1, s1) / dotProduct(s0, s0);
-            p0 = vectorAddition(s1, scalarVectorProduct(beta, p0));
-            s0 = s1;
-            i++;
-            /*
-            cout << "This is iteration number: " << i << "\n";
-            cout << "The current x0 is: ";
-            for (const auto& x : x0) {
-                cout << x << " ";
-            }
-            cout << "\n";
-            */
-            
-        }
-        return x0;
-    }
-};
 
 class Quadratic {
 public:
@@ -438,49 +315,3 @@ int main (int argc, char *argv[])
     
 
 }
-
-
-
-
-//--------------------------------------------------------------------------------
-// Original code for readData function
-//--------------------------------------------------------------------------------
-
-
-
-double string_to_double( const string& s )
-{
-    istringstream i(s);
-    double x;
-    if (!(i >> x))
-        return 0;
-    return x;
-} 
-
-void readData(vector<vector<double> >& data, const string& fileName)
-{
-    ifstream file(fileName);
-    Csv csv(file);
-    string line;
-    if (file.is_open())
-    {
-        int i = 0;
-        while (csv.getline(line) != 0) {
-            for (int j = 0; j < csv.getnfield(); j++)
-            {
-                double temp = string_to_double(csv.getfield(j));
-                //cout << "Asset " << j << ", Return " << i << "=" << temp << "\n";
-                data[j][i] = temp;
-            }
-            i++;
-        }
-        file.close();
-
-    }
-    else {
-        cout << fileName << " missing\n";
-        exit(0);
-    }
-    return;
-}
-
