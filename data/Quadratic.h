@@ -1,13 +1,18 @@
+// Quadratic.h
+#ifndef QUADRATIC_H
+#define QUADRATIC_H
+
 #include <vector>
-using namespace std;
 
 class Quadratic {
 public:
-    vector<vector<double> > createMatrixQ(const vector<vector<double> >& cov_matrix, const vector<double>& mean_returns);
-    vector<vector<double> > calculateBMatrix(const vector<double>& target_returns, const vector<double>& meanReturns_small);
-    vector<double> calculateX0(const vector<vector<double>>& Q, int numberAssets, double initial_guess = 0.5);
-    vector<vector<double> > calculatePortfolioWeights(const vector<vector<double>>& Q, const vector<vector<double>>& b_matrix, const vector<double>& x0, double tolerance, const vector<double>& meanReturns_small);
-    vector<vector<double> > createSmallReturnMatrix(const vector<vector<double>>& returnMatrix, int numberAssets_small, int numberReturns_small);
-    vector<vector<double>> selectRows(const vector<vector<double>>& returnMatrix, int start, int end);
-    vector<vector<double>> backtesting (vector<vector<double>> optimal_weights, vector<vector<double>> OOS_returns, vector<double> target_return);
+    std::vector<std::vector<double>> createMatrixQ(const std::vector<std::vector<double>>& cov_matrix, const std::vector<double>& mean_returns);
+    std::vector<std::vector<double>> calculateBMatrix(const std::vector<double>& target_returns, const std::vector<double>& meanReturns_small);
+    std::vector<double> calculateX0(const std::vector<std::vector<double>>& Q, int numberAssets, double initial_guess = 0.5);
+    std::vector<std::vector<double>> calculatePortfolioWeights(const std::vector<std::vector<double>>& Q, const std::vector<std::vector<double>>& b_matrix, const std::vector<double>& x0, double tolerance, const std::vector<double>& meanReturns_small);
+    std::vector<std::vector<double>> createSmallReturnMatrix(const std::vector<std::vector<double>>& returnMatrix, int numberAssets_small, int numberReturns_small);
+    std::vector<std::vector<double>> selectRows(const std::vector<std::vector<double>>& returnMatrix, int start, int end);
+    std::vector<std::vector<double>> backtesting(const std::vector<std::vector<double>>& optimal_weights, const std::vector<std::vector<double>>& OOS_returns, const std::vector<double>& target_return);
 };
+
+#endif
