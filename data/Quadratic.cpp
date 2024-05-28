@@ -29,6 +29,7 @@ std::vector<std::vector<double>> Quadratic::createMatrixQ(const std::vector<std:
         Q[i][len + 1] = -1;
     }
 
+    /*
     // Print Q
     std::cout << "\n_______\n Matrix Q:\n";
     for (const auto& row : Q) {
@@ -38,6 +39,8 @@ std::vector<std::vector<double>> Quadratic::createMatrixQ(const std::vector<std:
         std::cout << "\n";
     }
     std::cout << "(" << Q.size() << ", " << Q[0].size() << ")\n";
+    */
+
 
     return Q;
 }
@@ -53,6 +56,8 @@ std::vector<std::vector<double>> Quadratic::calculateBMatrix(const std::vector<d
         b_matrix[i][mean_returns_len + 1] = -1.0;
     }
 
+    /*
+    
     //print out b_matrix
     std::cout << "\n_______\nPrinting out b_matrix\n";
     for(int i = 0; i < n; i++) {
@@ -61,6 +66,7 @@ std::vector<std::vector<double>> Quadratic::calculateBMatrix(const std::vector<d
         }
         std::cout << "\n";
     }
+    */
     return b_matrix;
 }
 
@@ -69,12 +75,14 @@ std::vector<double> Quadratic::calculateX0(const std::vector<std::vector<double>
     double fillValue = initial_guess;
     std::vector<double> x0(x0_size, fillValue);
 
+    /*
+    
     //print out x0
     std::cout << "\n_______\nPrinting out x0 in the main function\n";
     for(int i = 0; i < numberAssets + 2; i++) {
         std::cout << x0[i] << " ";
     }
-
+    */
     return x0;
 }
 
@@ -89,6 +97,8 @@ std::vector<std::vector<double>> Quadratic::calculatePortfolioWeights(const std:
         weights_list.push_back(weight);
     }
 
+    /*
+    
     std::cout << "\nWeights Matrix: \n";
     for (const auto& weights : weights_list) {
         for (const auto& x : weights) {
@@ -96,6 +106,7 @@ std::vector<std::vector<double>> Quadratic::calculatePortfolioWeights(const std:
         }
         std::cout << "\n";
     }
+    */
 
     return weights_list;
 }
@@ -113,9 +124,24 @@ std::vector<std::vector<double>> Quadratic::createSmallReturnMatrix(const std::v
 }
 
 std::vector<std::vector<double>> Quadratic::selectRows(const std::vector<std::vector<double>>& returnMatrix, int start, int end) {
+    //std::cout << "start: " << start << " end: " << end << std::endl;
     std::vector<std::vector<double>> subset;
     for (int i = start; i < end; ++i) {
         subset.push_back(returnMatrix[i]);
+        
+    }
+    return subset;
+}
+
+std::vector<std::vector<double>> Quadratic::selectColumns(const std::vector<std::vector<double>>& returnMatrix, int start, int end) {
+    //std::cout << "start: " << start << " end: " << end << std::endl;
+    std::vector<std::vector<double>> subset;
+    for (const auto& row : returnMatrix) {
+        if (end > row.size()) {
+            end = row.size(); // Adjust end to be the size of row
+        }
+        std::vector<double> new_row(row.begin() + start, row.begin() + end);
+        subset.push_back(new_row);
     }
     return subset;
 }
