@@ -34,38 +34,16 @@
 #include "Quadratic.h"
 #include "MatrixWriter.h"
 
-using namespace std;
+
 
 typedef vector<vector<double>> Matrix;  // define a type for a matrix
 
 
+
+
 int main (int argc, char *argv[])
 {
-    /*
-    Matrix A_data = {
-    {4, -4},
-    {3, 1},
-    };
     
-    
-    // Define the vector b
-    vector<double> b_data = { 7,5 };
-
-
-    vector <double> x0_ed = {0.5, 0.5}; // initial guess for the weights
-    cout<<"Start"<<endl;
-    ConjugateGradientMethod solver_ed;
-    vector<double> results_ed = solver_ed.conjugate_gradient(A_data, b_data, x0_ed);
-    cout<<"End"<<endl;
-    //print out the result vector
-    
-    cout<<"\nresults_ed Vector: ";
-    for (const auto& x : results_ed) {
-        cout << x << " ";
-    }
-    
-    */
-
     
     int numberAssets=83;    
     int numberReturns=700;
@@ -91,8 +69,8 @@ int main (int argc, char *argv[])
         int end = i + 112;
         
         //print out the start, mid and end
-        cout<<"\nBacktesting Iteration: "<<index<<endl;
-        cout<<"start: "<<start<<" mid: "<<mid<<" end: "<<end<<endl;
+        
+        cout<<"Processed window " << (start + 1) << " - " << (start + 100)<< " of "<<numberReturns<<endl;
 
         Matrix returnMatrix_IS = portfolio.selectColumns(returnMatrix, start, mid); // select the in-sample data
         Matrix returnMatrix_OOS = portfolio.selectColumns(returnMatrix, mid, end);  // select the out-of-sample data
@@ -121,7 +99,6 @@ int main (int argc, char *argv[])
     //write the results to a csv file
     writeMatrixToCSV(results, "OOS_returns.csv");
     writeMatrixToCSV(results_2, "df_weights.csv");
-
     
     
     return 0;

@@ -126,20 +126,21 @@ public:
 
 class ConjugateGradientMethod : public MatrixCalculator {
 public:
-    vector<double> conjugate_gradient(const vector<vector<double> >& Q, const vector<double>& b, vector<double> x0, double tol=1e-6) {
+    vector<double> conjugate_gradient(const vector<vector<double>>& Q, const vector<double>& b, vector<double> x0, double tol = 1e-10, int max_iterations = 1000) {
         vector<double> s0 = vectorSubtraction(b, matrixVectorProduct(Q, x0));
         vector<double> p0 = s0;
-        int i = 0;
-        while (dotProduct(s0, s0) > tol) {
+        int I = 0;
+        while (sqrt(dotProduct(s0, s0)) > tol && I < max_iterations) {
             double alpha = dotProduct(s0, s0) / dotProduct(matrixVectorProduct(Q, p0), p0);
             x0 = vectorAddition(x0, scalarVectorProduct(alpha, p0));
             vector<double> s1 = vectorSubtraction(s0, scalarVectorProduct(alpha, matrixVectorProduct(Q, p0)));
             double beta = dotProduct(s1, s1) / dotProduct(s0, s0);
             p0 = vectorAddition(s1, scalarVectorProduct(beta, p0));
             s0 = s1;
-            i++;
+            I++;
+            
             /*
-            cout << "This is iteration number: " << i << "\n";
+            cout << "This is iteration number: " << I << "\n";
             cout << "The current x0 is: ";
             for (const auto& x : x0) {
                 cout << x << " ";
